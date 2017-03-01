@@ -1,7 +1,7 @@
 #+TITLE: Figure Exporter for MATLAB
 #+AUTHOR: Thibaud Toullier
 
-Figure Exporter is a simple interface that helps you for formatting and exporting your plots in a simple way. 
+Figure Exporter is a simple interface that helps you formatting and exporting your plots in a simple way. 
 
 [[https://github.com/KirmTwinty/figureExporter/raw/master/screenshot.png]]
 
