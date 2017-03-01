@@ -2,12 +2,16 @@ close all;
 clear all;
 clc;
 addpath(); % Path to the layout toolbox
+% Define values for x, y1, and y2
+x  = 0: .1 : 2*pi;
+y1 = cos(x);
+y2 = sin(x);
+% Plot y1 vs. x (blue, solid) and y2 vs. x (red, dashed)
+figure
+plot(x, y1, 'b', x, y2, 'r-.', 'LineWidth', 2)
 
-[X,Y] = meshgrid(-8:.5:8);
-R = sqrt(X.^2 + Y.^2) + eps;
-Z = sin(R)./R;
+% Turn on the grid
+grid on
+axis([0 2*pi -1.5 1.5])
 
-hFig = figure;
-mesh(Z);
-hAxes = gca;
-FigExporter(hAxes);
+FigExporter(gca);

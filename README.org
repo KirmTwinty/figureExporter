@@ -3,6 +3,8 @@
 
 Figure Exporter is a simple interface that helps you for formatting and exporting your plots in a simple way. 
 
+[[./screenshot
+]]
 * Usage
 First you need to download and install the GUI Layout Toolbox at https://www.mathworks.com/matlabcentral/fileexchange/27758-gui-layout-toolbox
 
@@ -25,3 +27,7 @@ FigExporter(hAxes);
 #+END_SRC: matlab
 
 As you can see in the /testme.m/ file, the tool only requires the handle to the axes you want to export as input. 
+
+
+
+
