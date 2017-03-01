@@ -122,9 +122,9 @@ classdef FigExporter < handle
             else
                 str='{';
                 for iCell = 1:numel(stringArray)-1
-                    str = [str, stringArray{iCell}, ', '];
+                    str = [str, '''', stringArray{iCell}, ''', '];
                 end
-                str = [str, stringArray{numel(stringArray)}, '}'];
+                str = [str, '''', stringArray{numel(stringArray)}, '''}'];
             end
         end
     end    
@@ -532,8 +532,9 @@ classdef FigExporter < handle
                 set(mainVBox, 'Heights', [-1, 40])
 
                 % Refresh the figure
-                obj.refresh;
+
                 copyobj(allchild(axesExported),obj.hAxes);
+                obj.refresh;
 
             else
                 error(['You need to provide the handle to the axes you want ' ...
