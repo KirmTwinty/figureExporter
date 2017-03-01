@@ -1,3 +1,4 @@
+%% Figure Exporter for MATLAB exports your plots to image easily
 % Copyright 2016, 2017 Thibaud Toullier
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -76,6 +77,7 @@
 % voC/YBBO2acxwAZz
 % =fENy
 % -----END PGP PUBLIC KEY BLOCK-----
+%
 
 classdef FigExporter < handle
     properties
