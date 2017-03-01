@@ -6,8 +6,7 @@ Figure Exporter is a simple interface that helps you for formatting and exportin
 * Usage
 First you need to download and install the GUI Layout Toolbox at https://www.mathworks.com/matlabcentral/fileexchange/27758-gui-layout-toolbox
 
-Then you can execute the testme.m file in Matlab to test the application.
-
+Then you can execute the /testme.m/ file in Matlab to test the application.
 
 #+BEGIN_SRC: matlab
 close all;
@@ -22,5 +21,7 @@ Z = sin(R)./R;
 hFig = figure;
 mesh(Z);
 hAxes = gca;
-exporter = FigExporter(hAxes);
+FigExporter(hAxes);
 #+END_SRC: matlab
+
+As you can see in the /testme.m/ file, the tool only requires the handle to the axes you want to export as input. 

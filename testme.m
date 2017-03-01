@@ -10,4 +10,4 @@ Z = sin(R)./R;
 hFig = figure;
 mesh(Z);
 hAxes = gca;
-exporter = FigExporter(hAxes);
+FigExporter(hAxes);

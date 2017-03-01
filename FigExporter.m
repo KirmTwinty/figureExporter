@@ -244,221 +244,227 @@ classdef FigExporter < handle
 
     methods
         function obj = FigExporter (axesExported, varargin)
-            if nargin > 1
-               obj.debug = 1; 
+            if nargin > 0
+                if nargin > 1
+                    obj.debug = 1; 
+                end
+                % Default properties
+                obj.originalXTickLabel = get(axesExported, 'XTickLabel');
+                obj.originalYTickLabel = get(axesExported, 'YTickLabel');
+                obj.originalZTickLabel = get(axesExported, 'ZTickLabel');
+                % Initialize
+                obj.init_parameters;
+                % Get the axes lim
+                obj.Settings.XLim = get(axesExported, 'XLim');
+                obj.Settings.YLim = get(axesExported, 'YLim');
+                obj.Settings.ZLim = get(axesExported, 'ZLim');
+                % Create the figure
+                obj.hFig = figure('Color', obj.backgroundColor,...
+                                  'Name', 'Figure Exporter', ...
+                                  'CloseRequestFcn', @(src, ev) ...
+                                  obj.on_close());
+                figPosition = get(obj.hFig, 'Position');
+                set(obj.hFig, 'Position', [figPosition(1), figPosition(2), ...
+                                    800, figPosition(4)]);
+
+
+                hb = uix.HBoxFlex('Parent', obj.hFig);
+
+
+                
+                %% Create the control panel - Tab Panel
+                mainVBox = uix.VBox('Parent', hb, 'Padding', 5);
+                % TabPanel
+                p = uix.TabPanel( 'Parent', mainVBox);
+
+                %% Tab 1 - General Settings
+                % -----------------------------------------------------
+                vBoxTab = uix.VBox('Parent', p);
+                % Interpreter
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uix.Empty('Parent', hbb);
+                checked = 0;
+                if strcmp(obj.Settings.interpreter, 'latex')
+                    checked = 1; 
+                end
+                obj.Handles.Interpreter = uicontrol('Style','checkbox', 'String', 'latex',...
+                                                    'Parent', hbb, 'Value', checked);
+                % Title
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Title', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.Title = uicontrol('String', obj.Settings.title, 'Style', 'edit',...
+                                              'Parent', hbb);            
+                % Subtitle
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Subtitle', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.Subtitle = uicontrol('String', obj.Settings.subtitle, 'Style', 'edit',...
+                                                 'Parent', hbb);
+                % Legend
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Legend', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.Legend = uicontrol('String', FigExporter.cell_to_str(obj.Settings.legendString), 'Style', 'edit',...
+                                               'Parent', hbb);
+                % Width
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Width', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.Width = uicontrol('String', num2str(obj.Settings.width),...
+                                              'Style', 'edit', ...
+                                              'Parent', hbb);
+                % Height
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Height', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.Height = uicontrol('String', num2str(obj.Settings.height),...
+                                               'Style', 'edit', ...
+                                               'Parent', hbb);
+                % Filename
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Filename', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.Filename = uicontrol('String', obj.Settings.filename,...
+                                                 'Style', 'edit', ...
+                                                 'Parent', hbb);
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Directory',...
+                          'Parent', hbb, 'Callback', @(src, ev) obj.get_directory());
+                obj.Handles.Directory = uicontrol('String', obj.Settings.directory,...
+                                                  'Style', 'edit', ...
+                                                  'Parent', hbb);
+                % Margin
+                uix.Empty('Parent', vBoxTab);
+                set(vBoxTab, 'Heights', [30 30 30 30 30 30 30 30 -1]);
+
+
+                %% Tab 2 - X Axes
+                % -----------------------------------------------------
+                vBoxTab = uix.VBox('Parent', p);
+                % X Label
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'X Label', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.XLabel = uicontrol('String', FigExporter.cell_to_str(obj.Settings.xlabel), 'Style', 'edit',...
+                                               'Parent', hbb);
+
+                % Limits
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'X Lim', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.XLim = uicontrol('String', FigExporter.array_to_str(obj.Settings.XLim), 'Style', 'edit',...
+                                             'Parent', hbb);            
+                % Rotation
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'X Rotation', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.XRotation = uicontrol('String', num2str(obj.Settings.XTickLabelRotation), 'Style', 'edit',...
+                                                  'Parent', hbb);
+                % Date Format
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'X Date Format', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.XDate = uicontrol('String', '', 'Style', 'edit',...
+                                              'Parent', hbb);
+                % Margin
+                uix.Empty('Parent', vBoxTab);
+                set(vBoxTab, 'Heights', [30 30 30 30 -1]);
+
+                %% Tab 3 - Y Axes
+                % -----------------------------------------------------
+                vBoxTab = uix.VBox('Parent', p);
+                % Y Label
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Y Label', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.YLabel = uicontrol('String', FigExporter.cell_to_str(obj.Settings.ylabel), 'Style', 'edit',...
+                                               'Parent', hbb);
+
+                % Limits
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Y Lim', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.YLim = uicontrol('String', FigExporter.array_to_str(obj.Settings.YLim), 'Style', 'edit',...
+                                             'Parent', hbb);            
+                % Rotation
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Y Rotation', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.YRotation = uicontrol('String', num2str(obj.Settings.YTickLabelRotation), 'Style', 'edit',...
+                                                  'Parent', hbb);
+                % Date Format
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Y Date Format', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.YDate = uicontrol('String', '', 'Style', 'edit',...
+                                              'Parent', hbb);
+                % Margin
+                uix.Empty('Parent', vBoxTab);
+                set(vBoxTab, 'Heights', [30 30 30 30 -1]);
+
+                %% Tab 3 - Z Axes
+                % -----------------------------------------------------
+                vBoxTab = uix.VBox('Parent', p);
+                % Z Label
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Z Label', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.ZLabel = uicontrol('String', FigExporter.cell_to_str(obj.Settings.zlabel), 'Style', 'edit',...
+                                               'Parent', hbb);
+
+                % Limits
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Z Lim', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.ZLim = uicontrol('String', FigExporter.array_to_str(obj.Settings.ZLim), 'Style', 'edit',...
+                                             'Parent', hbb);            
+                % Rotation
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Z Rotation', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.ZRotation = uicontrol('String', num2str(obj.Settings.ZTickLabelRotation), 'Style', 'edit',...
+                                                  'Parent', hbb);
+                % Date Format
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                uicontrol('String', 'Z Date Format', 'Style', 'text',...
+                          'Parent', hbb);
+                obj.Handles.ZDate = uicontrol('String', '', 'Style', 'edit',...
+                                              'Parent', hbb);
+                % Margin
+                uix.Empty('Parent', vBoxTab);
+                set(vBoxTab, 'Heights', [30 30 30 30 -1]);
+
+                p.TabTitles = {'General', 'X Axes', 'Y Axes', 'Z Axes'};
+                p.TabWidth = 60;
+                p.Selection = 1;
+
+                c = uicontainer('Parent', hb, 'BackgroundColor', obj.backgroundColor);
+                obj.hAxes = axes('Parent', c);
+                
+                
+                set(hb, 'Widths', [280, -1], 'Spacing', 10);
+                
+                
+                % Buttons
+                HBoxbtn = uix.HBox('Parent', mainVBox, 'Padding', 5);
+                uicontrol( 'Parent', HBoxbtn, 'String', 'Refresh', ...
+                           'Callback', @(src, ev) obj.refresh_all());
+                uix.Empty('Parent', HBoxbtn);
+                uicontrol( 'Parent', HBoxbtn, 'String', 'Export', ...
+                           'Callback', @(src, ev) obj.export());
+                set(HBoxbtn, 'Widths', [-2 -1 -2]);
+                
+                set(mainVBox, 'Heights', [-1, 40])
+
+                % Refresh the figure
+                obj.refresh;
+                copyobj(allchild(axesExported),obj.hAxes);
+
+            else
+                error(['You need to provide the handle to the axes you want ' ...
+                       'to export.']);
             end
-            % Default properties
-            obj.originalXTickLabel = get(axesExported, 'XTickLabel');
-            obj.originalYTickLabel = get(axesExported, 'YTickLabel');
-            obj.originalZTickLabel = get(axesExported, 'ZTickLabel');
-            % Initialize
-            obj.init_parameters;
-            % Get the axes lim
-            obj.Settings.XLim = get(axesExported, 'XLim');
-            obj.Settings.YLim = get(axesExported, 'YLim');
-            obj.Settings.ZLim = get(axesExported, 'ZLim');
-            % Create the figure
-            obj.hFig = figure('Color', obj.backgroundColor,...
-                              'Name', 'Figure Exporter', ...
-                              'CloseRequestFcn', @(src, ev) ...
-                              obj.on_close());
-            figPosition = get(obj.hFig, 'Position');
-            set(obj.hFig, 'Position', [figPosition(1), figPosition(2), ...
-                                800, figPosition(4)]);
-
-
-            hb = uix.HBoxFlex('Parent', obj.hFig);
-
-
-            
-            %% Create the control panel - Tab Panel
-            mainVBox = uix.VBox('Parent', hb, 'Padding', 5);
-            % TabPanel
-            p = uix.TabPanel( 'Parent', mainVBox);
-
-            %% Tab 1 - General Settings
-            % -----------------------------------------------------
-            vBoxTab = uix.VBox('Parent', p);
-            % Interpreter
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uix.Empty('Parent', hbb);
-            checked = 0;
-            if strcmp(obj.Settings.interpreter, 'latex')
-               checked = 1; 
-            end
-            obj.Handles.Interpreter = uicontrol('Style','checkbox', 'String', 'latex',...
-                                                'Parent', hbb, 'Value', checked);
-            % Title
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Title', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.Title = uicontrol('String', obj.Settings.title, 'Style', 'edit',...
-                                          'Parent', hbb);            
-            % Subtitle
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Subtitle', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.Subtitle = uicontrol('String', obj.Settings.subtitle, 'Style', 'edit',...
-                                             'Parent', hbb);
-            % Legend
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Legend', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.Legend = uicontrol('String', FigExporter.cell_to_str(obj.Settings.legendString), 'Style', 'edit',...
-                                           'Parent', hbb);
-            % Width
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Width', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.Width = uicontrol('String', num2str(obj.Settings.width),...
-                                          'Style', 'edit', ...
-                                           'Parent', hbb);
-            % Height
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Height', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.Height = uicontrol('String', num2str(obj.Settings.height),...
-                                           'Style', 'edit', ...
-                                           'Parent', hbb);
-            % Filename
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Filename', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.Filename = uicontrol('String', obj.Settings.filename,...
-                                             'Style', 'edit', ...
-                                             'Parent', hbb);
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Directory',...
-                      'Parent', hbb, 'Callback', @(src, ev) obj.get_directory());
-            obj.Handles.Directory = uicontrol('String', obj.Settings.directory,...
-                                             'Style', 'edit', ...
-                                             'Parent', hbb);
-            % Margin
-            uix.Empty('Parent', vBoxTab);
-            set(vBoxTab, 'Heights', [30 30 30 30 30 30 30 30 -1]);
-
-
-            %% Tab 2 - X Axes
-            % -----------------------------------------------------
-            vBoxTab = uix.VBox('Parent', p);
-            % X Label
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'X Label', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.XLabel = uicontrol('String', FigExporter.cell_to_str(obj.Settings.xlabel), 'Style', 'edit',...
-                                      'Parent', hbb);
-
-            % Limits
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'X Lim', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.XLim = uicontrol('String', FigExporter.array_to_str(obj.Settings.XLim), 'Style', 'edit',...
-                      'Parent', hbb);            
-            % Rotation
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'X Rotation', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.XRotation = uicontrol('String', num2str(obj.Settings.XTickLabelRotation), 'Style', 'edit',...
-                      'Parent', hbb);
-            % Date Format
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'X Date Format', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.XDate = uicontrol('String', '', 'Style', 'edit',...
-                      'Parent', hbb);
-            % Margin
-            uix.Empty('Parent', vBoxTab);
-            set(vBoxTab, 'Heights', [30 30 30 30 -1]);
-
-            %% Tab 3 - Y Axes
-            % -----------------------------------------------------
-            vBoxTab = uix.VBox('Parent', p);
-            % Y Label
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Y Label', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.YLabel = uicontrol('String', FigExporter.cell_to_str(obj.Settings.ylabel), 'Style', 'edit',...
-                                           'Parent', hbb);
-
-            % Limits
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Y Lim', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.YLim = uicontrol('String', FigExporter.array_to_str(obj.Settings.YLim), 'Style', 'edit',...
-                      'Parent', hbb);            
-            % Rotation
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Y Rotation', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.YRotation = uicontrol('String', num2str(obj.Settings.YTickLabelRotation), 'Style', 'edit',...
-                      'Parent', hbb);
-            % Date Format
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Y Date Format', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.YDate = uicontrol('String', '', 'Style', 'edit',...
-                      'Parent', hbb);
-            % Margin
-            uix.Empty('Parent', vBoxTab);
-            set(vBoxTab, 'Heights', [30 30 30 30 -1]);
-
-            %% Tab 3 - Z Axes
-            % -----------------------------------------------------
-            vBoxTab = uix.VBox('Parent', p);
-            % Z Label
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Z Label', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.ZLabel = uicontrol('String', FigExporter.cell_to_str(obj.Settings.zlabel), 'Style', 'edit',...
-                                      'Parent', hbb);
-
-            % Limits
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Z Lim', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.ZLim = uicontrol('String', FigExporter.array_to_str(obj.Settings.ZLim), 'Style', 'edit',...
-                      'Parent', hbb);            
-            % Rotation
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Z Rotation', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.ZRotation = uicontrol('String', num2str(obj.Settings.ZTickLabelRotation), 'Style', 'edit',...
-                      'Parent', hbb);
-            % Date Format
-            hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
-            uicontrol('String', 'Z Date Format', 'Style', 'text',...
-                      'Parent', hbb);
-            obj.Handles.ZDate = uicontrol('String', '', 'Style', 'edit',...
-                      'Parent', hbb);
-            % Margin
-            uix.Empty('Parent', vBoxTab);
-            set(vBoxTab, 'Heights', [30 30 30 30 -1]);
-
-            p.TabTitles = {'General', 'X Axes', 'Y Axes', 'Z Axes'};
-            p.TabWidth = 60;
-            p.Selection = 1;
-
-            c = uicontainer('Parent', hb, 'BackgroundColor', obj.backgroundColor);
-            obj.hAxes = axes('Parent', c);
-            
-            
-            set(hb, 'Widths', [280, -1], 'Spacing', 10);
-            
-            
-            % Buttons
-            HBoxbtn = uix.HBox('Parent', mainVBox, 'Padding', 5);
-            uicontrol( 'Parent', HBoxbtn, 'String', 'Refresh', ...
-                       'Callback', @(src, ev) obj.refresh_all());
-            uix.Empty('Parent', HBoxbtn);
-            uicontrol( 'Parent', HBoxbtn, 'String', 'Export', ...
-                       'Callback', @(src, ev) obj.export());
-            set(HBoxbtn, 'Widths', [-2 -1 -2]);
-            
-            set(mainVBox, 'Heights', [-1, 40])
-
-            % Refresh the figure
-            obj.refresh;
-            copyobj(allchild(axesExported),obj.hAxes);
         end
     end
 end
