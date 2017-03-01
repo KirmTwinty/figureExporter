@@ -1,0 +1,26 @@
+#+TITLE: Figure Exporter for MATLAB
+#+AUTHOR: Thibaud Toullier
+
+Figure Exporter is a simple interface that helps you for formatting and exporting your plots in a simple way. 
+
+* Usage
+First you need to download and install the GUI Layout Toolbox at https://www.mathworks.com/matlabcentral/fileexchange/27758-gui-layout-toolbox
+
+Then you can execute the testme.m file in Matlab to test the application.
+
+
+#+BEGIN_SRC: matlab
+close all;
+clear all;
+clc;
+addpath(); % Path to the layout toolbox
+
+[X,Y] = meshgrid(-8:.5:8);
+R = sqrt(X.^2 + Y.^2) + eps;
+Z = sin(R)./R;
+
+hFig = figure;
+mesh(Z);
+hAxes = gca;
+exporter = FigExporter(hAxes);
+#+END_SRC: matlab
