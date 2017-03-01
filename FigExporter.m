@@ -211,9 +211,9 @@ classdef FigExporter < handle
             obj.Settings.subtitle =  get(obj.Handles.Subtitle, 'String');
             obj.Settings.filename =  get(obj.Handles.Filename, 'String');
             obj.Settings.directory =  get(obj.Handles.Directory, 'String');
-            obj.Settings.xlabel =  eval(get(obj.Handles.XLabel, 'String'));
-            obj.Settings.ylabel =  eval(get(obj.Handles.YLabel, 'String'));
-            obj.Settings.zlabel =  eval(get(obj.Handles.ZLabel, 'String'));
+            obj.Settings.xlabel = eval(get(obj.Handles.XLabel, 'String'));
+            obj.Settings.ylabel = eval(get(obj.Handles.YLabel, 'String'));
+            obj.Settings.zlabel = eval(get(obj.Handles.ZLabel, 'String'));
             obj.Settings.legendString =  eval(get(obj.Handles.Legend, 'String'));
             obj.Settings.XLim = eval(get(obj.Handles.XLim, 'String'));
             obj.Settings.XTickLabelRotation = str2num(get(obj.Handles.XRotation, 'String'));
@@ -242,47 +242,40 @@ classdef FigExporter < handle
 
             % XFormating
             if ~isempty(obj.Settings.XLim)
-                obj.hAxes.XLim = obj.Settings.XLim;
+                xlim(obj.hAxes, obj.Settings.XLim);
             end
             obj.hAxes.XTickLabelRotation = obj.Settings.XTickLabelRotation;
             if ~isempty(obj.Settings.XTickLabelDateFormat)
                 obj.hAxes.XTickLabel=datestr(obj.hAxes.XTick , ...
                                              obj.Settings ...
                                              .XTickLabelDateFormat);
-            else
-                obj.hAxes.XTickLabel = obj.originalXTickLabel;
             end
             obj.hAxes.XGrid = obj.Settings.XGrid;
 
             % YFormating
             if ~isempty(obj.Settings.YLim)
-                obj.hAxes.YLim = obj.Settings.YLim;
+                ylim(obj.hAxes, obj.Settings.YLim);
             end
             obj.hAxes.YTickLabelRotation = obj.Settings.YTickLabelRotation;
             if ~isempty(obj.Settings.YTickLabelDateFormat)
                 obj.hAxes.YTickLabel=datestr(obj.hAxes.YTick , ...
                                              obj.Settings ...
                                              .YTickLabelDateFormat);
-            else
-                obj.hAxes.YTickLabel = obj.originalYTickLabel;
-                
             end
             obj.hAxes.YGrid = obj.Settings.YGrid;
 
             % ZFormating
             if ~isempty(obj.Settings.ZLim)
-                obj.hAxes.ZLim = obj.Settings.ZLim;
+                zlim(obj.hAxes, obj.Settings.ZLim);
             end
             obj.hAxes.ZTickLabelRotation = obj.Settings.ZTickLabelRotation;
             if ~isempty(obj.Settings.ZTickLabelDateFormat)
                 obj.hAxes.ZTickLabel=datestr(obj.hAxes.ZTick , ...
                                              obj.Settings.ZTickLabelDateFormat);
-            else
-                obj.hAxes.ZTickLabel = obj.originalZTickLabel;
-                
             end
             obj.hAxes.ZGrid = obj.Settings.ZGrid;
             
+
 
 
             % Strings
