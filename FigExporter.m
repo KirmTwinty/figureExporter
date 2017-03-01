@@ -1,5 +1,6 @@
 classdef FigExporter < handle
     properties
+        version = '0.1'
         backgroundColor = [1 1 1]
         hFig
         hAxes
