@@ -86,7 +86,7 @@ classdef FigExporter < handle
         hFig
         hAxes
         debug = 0;
-        
+        colorList
         % Figure settings
         Settings
         % Figure handles
@@ -206,6 +206,32 @@ classdef FigExporter < handle
                 obj.Settings.directory = folder_name; 
             end
         end
+        function color_callback (obj)
+           c = uisetcolor(); % Get user color choice (modal window)
+           v = numel(obj.colorList) - get(obj.Handles.popup, 'Value')+1;
+           if numel(c) == 3
+               % Set the new color for the current figure
+               lineCounter = 1;
+               for iLine = 1:numel(obj.hAxes.Children)
+                   if isa(obj.hAxes.Children(iLine), ...
+                          'matlab.graphics.chart.primitive.Line')
+                       if lineCounter == v
+                           set(obj.hAxes.Children(iLine), 'Color', ...
+                                             c);
+                           obj.colorList{get(obj.Handles.popup, 'Value')} = c;
+                           set(obj.Handles.Color, 'BackgroundColor', ...
+                                             c);
+                           break;
+                       end
+                       lineCounter = lineCounter + 1;
+                   end
+               end
+           end
+        end
+        function popup_callback (obj)
+            v = get(obj.Handles.popup, 'Value');
+            set(obj.Handles.Color, 'BackgroundColor', obj.colorList{v});
+        end
         function update_settings (obj)
             obj.Settings.title =  get(obj.Handles.Title, 'String');
             obj.Settings.subtitle =  get(obj.Handles.Subtitle, 'String');
@@ -309,9 +335,43 @@ classdef FigExporter < handle
 
             if ~isempty(obj.Settings.legendString)
                 legend(obj.Settings.legendString, 'interpreter', obj.Settings.interpreter);
+            else
+                legend('hide');
             end
 
-           
+            % Now copy the lines to the popup to change the
+            % color
+            obj.colorList = {};
+            strPopup = {};
+            for iLine = 1:numel(obj.hAxes.Children)
+                if isa(obj.hAxes.Children(iLine), ...
+                       'matlab.graphics.chart.primitive.Line')
+                    if iLine <= numel(obj.Settings.legendString)
+                        strPopup{numel(strPopup) + 1} = ...
+                            obj.Settings.legendString{iLine};
+                    else
+                        strPopup{numel(strPopup) + 1} = ['Curve #', ...
+                                            num2str(iLine)];
+                    end
+                end
+            end
+            obj.colorList = cell(numel(strPopup), 1);
+            lineCounter = numel(strPopup);
+            for iLine = 1:numel(obj.hAxes.Children)
+                if isa(obj.hAxes.Children(iLine), ...
+                       'matlab.graphics.chart.primitive.Line')
+                    obj.colorList{lineCounter} = ...
+                        get(obj.hAxes.Children(iLine), 'Color');
+
+                    lineCounter = lineCounter -1;
+
+                end
+            end
+                
+            set(obj.Handles.popup, 'String', strPopup, 'Value', ...
+                              1);
+            set(obj.Handles.Color, 'BackgroundColor', ...
+                              obj.colorList{1});
         end 
         
     end
@@ -402,15 +462,32 @@ classdef FigExporter < handle
                 obj.Handles.Filename = uicontrol('String', obj.Settings.filename,...
                                                  'Style', 'edit', ...
                                                  'Parent', hbb);
+                % Directory
                 hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
                 uicontrol('String', 'Directory',...
                           'Parent', hbb, 'Callback', @(src, ev) obj.get_directory());
                 obj.Handles.Directory = uicontrol('String', obj.Settings.directory,...
                                                   'Style', 'edit', ...
                                                   'Parent', hbb);
+                % Color
+                hbb = uix.HBox('Parent', vBoxTab, 'Padding', 5);
+                obj.Handles.popup = uicontrol('String', 'Curve', 'Style', ...
+                                              'popupmenu', 'Parent', ...
+                                              hbb, 'Callback', @(src, ...
+                                                                 ev) ...
+                                              obj.popup_callback);
+                uix.Empty('Parent', hbb);
+                
+                obj.Handles.Color = uicontrol('String', '',...
+                                              'Parent', hbb, ...
+                                              'Callback', @(src, ev) ...
+                                              obj.color_callback);
+                uix.Empty('Parent', hbb);
+                set(hbb, 'Widths', [-3, -1, -1, -1]);
+
                 % Margin
                 uix.Empty('Parent', vBoxTab);
-                set(vBoxTab, 'Heights', [30 30 30 30 30 30 30 30 -1]);
+                set(vBoxTab, 'Heights', [30 30 30 30 30 30 30 30 30 -1]);
 
 
                 %% Tab 2 - X Axes
@@ -532,10 +609,9 @@ classdef FigExporter < handle
                 set(mainVBox, 'Heights', [-1, 40])
 
                 % Refresh the figure
-
                 copyobj(allchild(axesExported),obj.hAxes);
-                obj.refresh;
 
+                obj.refresh;
             else
                 error(['You need to provide the handle to the axes you want ' ...
                        'to export.']);
